@@ -1,0 +1,47 @@
+OCD Practice
+Daily guided tool
+LOG
+
+Log an incident
+
+Recent entries
+PRACTICE
+
+Meditate
+
+Urge surfing
+
+Exposure ladder
+TRACK
+
+Weekly challenge
+
+Progress
+ACCOUNT
+
+Settings
+TRACKER
+Log an incident
+Record each triggering situation as it happens. This goes directly to your Google Sheet.
+DATE
+
+TIME
+SITUATION / ACTIVITY / THOUGHT THAT EVOKED DISTRESS
+PEAK SUDS (0–100)
+0
+
+100
+50
+Moderate distress
+DESCRIPTION OF RITUAL / COMPULSION
+RITUAL CONTINUED (OPTIONAL)
+MINUTES SPENT ON RITUAL
+
+NOTES (OPTIONAL)
+
+
+Save to Sheet
+
+Remember
+Logging is not a compulsion. It's data. Write what happened and move on — don't over-describe or seek relief through detail.
+
