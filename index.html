@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCD Daily Practice</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Lora:ital,wght@0,500;1,400&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F7F5F0;--surface:#FFFFFF;--surface2:#F0EDE8;
+  --border:rgba(0,0,0,0.10);--border-strong:rgba(0,0,0,0.18);
+  --text:#1A1916;--text-2:#5A5750;--text-3:#9A9590;
+  --accent:#3B6D11;--accent-light:#EAF3DE;--accent-mid:#639922;
+  --warn:#BA7517;--warn-light:#FAEEDA;
+  --danger:#993C1D;--danger-light:#FAECE7;
+  --radius:10px;--radius-sm:6px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#18170F;--surface:#221F15;--surface2:#2C2818;
+    --border:rgba(255,255,255,0.10);--border-strong:rgba(255,255,255,0.20);
+    --text:#F0EDE8;--text-2:#A8A49D;--text-3:#6A6660;
+    --accent:#97C459;--accent-light:#173404;--accent-mid:#639922;
+    --warn:#EF9F27;--warn-light:#412402;
+    --danger:#F0997B;--danger-light:#4A1B0C;
+  }
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;}
+a{color:var(--accent);}
+:focus-visible{outline:2px solid var(--accent-mid);outline-offset:2px;}
+/* Welcome banner */
+.welcome{background:var(--surface);border:0.5px solid var(--border);border-left:3px solid var(--warn);border-radius:0 var(--radius) var(--radius) 0;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:none;}
+.welcome.show{display:block;}
+.welcome-title{font-family:'Lora',serif;font-size:18px;font-weight:500;margin-bottom:6px;}
+.welcome p{font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:8px;}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-card{background:var(--surface);border-radius:var(--radius);padding:2rem;max-width:560px;width:100%;}
+.modal-title{font-family:'Lora',serif;font-size:20px;font-weight:500;margin-bottom:1.25rem;}
+.settings-block{padding:1rem 0;border-top:0.5px solid var(--border);}
+.settings-block:first-of-type{border-top:none;padding-top:0;}
+.settings-h{font-size:14px;font-weight:500;margin-bottom:4px;}
+.status-pill{display:inline-block;font-size:12px;padding:2px 10px;border-radius:20px;margin-bottom:10px;}
+.status-on{background:var(--accent-light);color:var(--accent);}
+.status-off{background:var(--surface2);color:var(--text-2);}
+details.howto{margin:10px 0;}
+details.howto summary{cursor:pointer;font-size:13px;color:var(--accent);}
+.step{display:flex;gap:12px;margin:12px 0;}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent-light);border:0.5px solid var(--accent-mid);color:var(--accent);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-body{flex:1;font-size:13px;color:var(--text-2);line-height:1.6;}
+.step-body strong{color:var(--text);font-weight:500;}
+.step-code{background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;margin-top:6px;font-size:11px;font-family:monospace;color:var(--text-2);line-height:1.7;word-break:break-all;user-select:all;}
+.note{font-size:12px;color:var(--text-3);line-height:1.6;margin-top:6px;}
+/* Shell */
+.shell{display:flex;min-height:100vh;}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:0.5px solid var(--border);padding:2rem 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:10;}
+.main{margin-left:220px;flex:1;min-width:0;padding:2.5rem 2.5rem 4rem;}
+.main > *{max-width:820px;margin-left:auto;margin-right:auto;}
+@media(max-width:700px){
+  .sidebar{width:100%;position:relative;bottom:auto;border-right:none;border-bottom:0.5px solid var(--border);padding:1rem 0;}
+  .shell{flex-direction:column;}
+  .main{margin-left:0;padding:1.5rem 1rem 3rem;}
+  .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .form-grid{grid-template-columns:1fr;}
+}
+.sidebar-header{padding:0 1.5rem 1.5rem;}
+.wordmark strong{display:block;font-size:16px;color:var(--text);font-weight:500;}
+.wordmark{font-family:'Lora',serif;font-style:italic;font-size:14px;color:var(--text-2);}
+.nav-label{font-size:11px;letter-spacing:0.03em;color:var(--text-3);padding:0.75rem 1.5rem 0.25rem;font-weight:500;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 1.5rem;font-size:14px;color:var(--text-2);cursor:pointer;border-left:2px solid transparent;user-select:none;background:none;border-top:none;border-right:none;border-bottom:none;width:100%;text-align:left;font-family:inherit;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light);font-weight:500;}
+.nav-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+.section{display:none;}
+.section.active{display:block;}
+.page-header{margin-bottom:2rem;}
+.page-title{font-family:'Lora',serif;font-size:28px;font-weight:500;color:var(--text);line-height:1.3;}
+.page-sub{font-size:14px;color:var(--text-2);margin-top:6px;}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;}
+.card-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:0.75rem;}
+.muted{font-size:13px;color:var(--text-3);}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;font-family:'Inter',sans-serif;border:0.5px solid var(--border-strong);background:transparent;color:var(--text);cursor:pointer;}
+.btn:hover{background:var(--surface2);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.btn-accent{background:var(--accent-light);border-color:var(--accent-mid);color:var(--accent);}
+.btn-sm{padding:5px 12px;font-size:13px;font-weight:400;}
+.btn-full{width:100%;justify-content:center;}
+.btn-danger{color:var(--danger);border-color:var(--danger);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.field-label{font-size:12px;color:var(--text-3);margin-bottom:6px;}
+textarea,input[type="text"],input[type="time"]{width:100%;font-size:14px;color:var(--text);background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-family:'Inter',sans-serif;resize:vertical;outline:none;}
+textarea:focus,input[type="text"]:focus,input[type="time"]:focus{border-color:var(--accent-mid);}
+select{padding:8px 12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-size:14px;color:var(--text);font-family:'Inter',sans-serif;outline:none;cursor:pointer;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-field{display:flex;flex-direction:column;}
+.form-field.full{grid-column:1/-1;}
+.suds-row{display:flex;align-items:center;gap:12px;}
+.suds-val{font-size:28px;font-weight:500;min-width:48px;text-align:center;font-variant-numeric:tabular-nums;color:var(--text);}
+input[type="range"]{flex:1;accent-color:var(--accent);cursor:pointer;}
+.suds-label{font-size:12px;color:var(--text-3);text-align:center;margin-top:4px;}
+.save-hint{font-size:12px;color:var(--text-3);text-align:center;margin-top:8px;}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;padding:1rem 0;}
+.timer-ring{position:relative;width:180px;height:180px;margin-bottom:1.5rem;}
+.timer-ring svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:7;}
+.ring-fg{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+.timer-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+.timer-time{font-size:34px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums;}
+.timer-phase{font-size:12px;color:var(--text-3);margin-top:2px;}
+.phase-track{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;justify-content:center;}
+.phase-pip{font-size:12px;color:var(--text-3);padding:4px 12px;border-radius:20px;border:0.5px solid var(--border);}
+.phase-pip.active{color:var(--accent);background:var(--accent-light);border-color:var(--accent-mid);}
+.phase-pip.done{background:var(--surface2);}
+.script-box{background:var(--surface2);border-radius:var(--radius-sm);padding:1.25rem;margin-bottom:1.5rem;min-height:90px;width:100%;}
+.script-box p{font-family:'Lora',serif;font-style:italic;font-size:15px;color:var(--text);line-height:1.8;}
+.minute-row{padding:12px 0;border-bottom:0.5px solid var(--border);}
+.minute-row:last-child{border-bottom:none;}
+.minute-head{display:flex;align-items:baseline;gap:10px;margin-bottom:5px;}
+.minute-n{font-size:12px;font-weight:500;color:var(--accent);white-space:nowrap;}
+.minute-name{font-size:14px;font-weight:500;}
+.urge-number{font-family:'Lora',serif;font-size:56px;font-weight:500;text-align:center;line-height:1;}
+.urge-bar-wrap{width:100%;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:14px 0;}
+.urge-bar{height:100%;border-radius:4px;transition:width 0.3s,background 0.3s;}
+.exposure-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.exposure-item:last-child{border-bottom:none;}
+.exp-check{width:22px;height:22px;border:0.5px solid var(--border-strong);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;background:none;}
+.exp-check.done{background:var(--accent);border-color:var(--accent);}
+.exp-check.done::after{content:'';display:block;width:6px;height:10px;border:2px solid white;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);}
+.exp-text{flex:1;font-size:14px;line-height:1.5;}
+.exp-text.done{text-decoration:line-through;color:var(--text-3);}
+.exp-badge{font-size:11px;color:var(--text-3);white-space:nowrap;margin-top:3px;background:var(--surface2);border-radius:20px;padding:2px 8px;border:0.5px solid var(--border);}
+.exp-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;}
+.exp-del:hover{color:var(--danger);}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+.metric-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;}
+.metric-val{font-size:26px;font-weight:500;font-variant-numeric:tabular-nums;}
+.metric-lbl{font-size:11px;color:var(--text-3);margin-top:3px;}
+.chart-wrap{position:relative;width:100%;height:200px;}
+.history-entry{padding:10px 0;border-bottom:0.5px solid var(--border);}
+.history-entry:last-child{border-bottom:none;}
+.history-entry{position:relative;padding-right:2rem;}
+.entry-del{position:absolute;top:8px;right:0;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:18px;line-height:1;padding:4px 6px;border-radius:4px;}
+.entry-del:hover{color:var(--danger);background:var(--danger-light);}
+.history-time{font-size:12px;color:var(--text-3);}
+.history-situation{font-size:14px;margin:2px 0;line-height:1.4;}
+.history-ritual{font-size:13px;color:var(--text-2);font-style:italic;}
+.suds-chip{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;margin-left:6px;}
+.suds-low{background:var(--accent-light);color:var(--accent);}
+.suds-mid{background:var(--warn-light);color:var(--warn);}
+.suds-high{background:var(--danger-light);color:var(--danger);}
+.divider{height:0.5px;background:var(--border);margin:1.25rem 0;}
+.add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.add-row input{flex:1;min-width:160px;}
+.weekly-status{font-size:13px;color:var(--accent);font-weight:500;}
+.recent-log-list{max-height:480px;overflow-y:auto;}
+.source-note{font-size:12px;color:var(--text-3);margin-bottom:10px;}
+.guide h2{font-family:'Lora',serif;font-size:19px;font-weight:500;margin:0 0 0.5rem;}
+.guide p{font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:0.75rem;max-width:68ch;}
+.guide p:last-child{margin-bottom:0;}
+.guide ol{padding-left:1.25rem;margin:0.25rem 0 0.75rem;}
+.guide li{font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:0.4rem;max-width:66ch;}
+.guide li strong,.guide p strong{color:var(--text);font-weight:500;}
+.guide h3{font-size:14px;font-weight:500;margin:1.25rem 0 0.4rem;}
+.guide .option-tag{font-size:12px;color:var(--text-3);font-weight:400;}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.5rem;}
+.toc a{font-size:13px;padding:4px 12px;border-radius:20px;border:0.5px solid var(--border);color:var(--text-2);text-decoration:none;background:var(--surface);}
+.toc a:hover{border-color:var(--accent-mid);color:var(--accent);}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(6px);background:var(--text);color:var(--bg);font-size:13px;font-weight:500;padding:10px 20px;border-radius:20px;opacity:0;transition:opacity 0.2s,transform 0.2s;pointer-events:none;z-index:1000;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="modal-card">
+    <div class="modal-title" id="settings-title">Settings</div>
+
+    <div class="settings-block">
+      <div class="settings-h">Where your entries are saved</div>
+      <p class="muted" style="margin-bottom:10px;">Entries are saved in this browser on this device. Nothing is sent anywhere unless you connect a Google Sheet below. Clearing your browser data will erase them, so download a copy now and then.</p>
+      <button class="btn btn-sm" onclick="exportCSV()">Download my entries (CSV)</button>
+    </div>
+
+    <div class="settings-block">
+      <div class="settings-h">Google Sheet sync (optional)</div>
+      <div id="sync-status"></div>
+      <p class="muted">Connect your own Google Sheet if you want your log in a spreadsheet, or want to see it across devices. This takes about 5 minutes.</p>
+      <p class="muted" style="margin:6px 0;"><a href="#" onclick="closeSettings();goTo('guide','guide-sheet');return false;">Step-by-step setup instructions</a> are in How to use.</p>
+      <input type="text" id="settings-url" style="margin:6px 0 10px;font-size:13px;" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="btn-row">
+        <button class="btn btn-accent btn-sm" onclick="saveSync()">Connect Sheet</button>
+        <button class="btn btn-sm" id="disconnect-btn" onclick="disconnectSync()">Disconnect</button>
+      </div>
+      <div id="sync-error" class="note" style="color:var(--danger);display:none;">That doesn't look like a Web app link. It should start with https://script.google.com and end in /exec.</div>
+    </div>
+
+    <div class="settings-block">
+      <div class="settings-h">Reset</div>
+      <p class="muted" style="margin-bottom:10px;">Erase everything saved in this browser: entries, exposures, weekly challenges and settings. A connected Google Sheet is not affected.</p>
+      <button class="btn btn-sm btn-danger" onclick="resetAll()">Erase data in this browser</button>
+    </div>
+
+    <div style="text-align:right;margin-top:1rem;"><button class="btn" onclick="closeSettings()">Done</button></div>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="wordmark"><strong>OCD Practice</strong>Daily guided tool</div>
+    </div>
+    <nav>
+      <button class="nav-item" data-sec="guide" onclick="show('guide',this)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        How to use
+      </button>
+      <div class="nav-label">Log</div>
+      <button class="nav-item active" onclick="show('log',this)">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Log an incident
+      </button>
+      <button class="nav-item" onclick="show('recent',this)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Recent entries
+      </button>
+      <div class="nav-label">Practice</div>
+      <button class="nav-item" onclick="show('meditate',this)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Meditate
+      </button>
+      <button class="nav-item" onclick="show('urge',this)">
+        <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        Urge surfing
+      </button>
+      <button class="nav-item" onclick="show('expose',this)">
+        <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Exposure ladder
+      </button>
+      <div class="nav-label">Track</div>
+      <button class="nav-item" onclick="show('weekly',this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Weekly challenge
+      </button>
+      <button class="nav-item" onclick="show('progress',this)">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Progress
+      </button>
+      <div class="nav-label">More</div>
+      <button class="nav-item" data-sec="feedback" onclick="show('feedback',this)">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Questions or feedback
+      </button>
+      <button class="nav-item" onclick="openSettings()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </button>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <div class="welcome" id="welcome">
+      <div class="welcome-title">Welcome</div>
+      <p>This is a free self-help tool for practicing ERP (exposure and response prevention) and mindfulness. Your entries stay in this browser on this device. No account needed.</p>
+      <p><strong>Please note:</strong> this tool supports personal practice. It is not a medical device and does not replace professional mental health treatment. If you're in crisis, call or text 988 (Suicide &amp; Crisis Lifeline, US).</p>
+      <div class="btn-row">
+        <button class="btn btn-accent btn-sm" onclick="dismissWelcome()">Got it</button>
+        <button class="btn btn-sm" onclick="dismissWelcome();goTo('guide')">Read how to use</button>
+        <button class="btn btn-sm" onclick="dismissWelcome();goTo('guide','guide-findhelp')">Find a therapist</button>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div id="sec-log" class="section active">
+      <div class="page-header">
+        <div class="page-title">Log an incident</div>
+        <div class="page-sub">Record each triggering situation as it happens.</div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="field-label" for="inc-date">Date</label>
+            <input type="text" id="inc-date" readonly style="cursor:default;">
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="inc-time">Time</label>
+            <input type="time" id="inc-time">
+          </div>
+          <div class="form-field full">
+            <label class="field-label" for="inc-situation">Situation, activity or thought that caused distress</label>
+            <textarea id="inc-situation" rows="3" placeholder="What triggered the distress and the urge to do a ritual?"></textarea>
+          </div>
+          <div class="form-field full">
+            <label class="field-label" for="suds-slider">Peak distress (SUDS, 0–100)</label>
+            <div class="suds-row">
+              <span class="muted">0</span>
+              <input type="range" min="0" max="100" value="50" step="5" id="suds-slider" oninput="updateSuds(this.value)">
+              <span class="muted">100</span>
+            </div>
+            <div style="text-align:center;"><span class="suds-val" id="suds-val">50</span></div>
+            <div class="suds-label" id="suds-label">Moderate distress</div>
+          </div>
+          <div class="form-field full">
+            <label class="field-label" for="inc-ritual">Ritual or compulsion</label>
+            <textarea id="inc-ritual" rows="2" placeholder="What did you do in response? Write 'none' if you resisted."></textarea>
+          </div>
+          <div class="form-field full">
+            <label class="field-label" for="inc-ritual2">Ritual continued (optional)</label>
+            <textarea id="inc-ritual2" rows="2" placeholder="Any continuation or extra detail"></textarea>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="inc-minutes">Minutes on ritual</label>
+            <input type="text" id="inc-minutes" inputmode="numeric" placeholder="e.g. 2">
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="inc-notes">Notes (optional)</label>
+            <input type="text" id="inc-notes" placeholder="Anything else">
+          </div>
+        </div>
+        <button class="btn btn-accent btn-full" id="log-btn" onclick="submitIncident()">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Save entry
+        </button>
+        <div class="save-hint" id="save-hint"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Remember</div>
+        <p class="muted">Logging is not a compulsion. It's data. Write what happened and move on — don't over-describe or seek relief through detail.</p>
+      </div>
+    </div>
+
+    <!-- RECENT -->
+    <div id="sec-recent" class="section">
+      <div class="page-header">
+        <div class="page-title">Recent entries</div>
+        <div class="page-sub">Your last 30 entries, newest first.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+          <div class="card-title" style="margin:0;">Your log</div>
+          <div class="btn-row">
+            <button class="btn btn-sm" onclick="exportCSV()">Download CSV</button>
+            <button class="btn btn-sm" onclick="loadRecent()">Refresh</button>
+          </div>
+        </div>
+        <div class="source-note" id="recent-source"></div>
+        <div id="recent-list"><p class="muted">Loading...</p></div>
+      </div>
+    </div>
+
+    <!-- MEDITATE -->
+    <div id="sec-meditate" class="section">
+      <div class="page-header">
+        <div class="page-title">5-minute meditation</div>
+        <div class="page-sub">This should feel mildly uncomfortable, not soothing. You're training: thought ≠ threat.</div>
+      </div>
+      <div class="card">
+        <div class="phase-track" id="phase-track"></div>
+        <div class="timer-wrap">
+          <div class="timer-ring">
+            <svg width="180" height="180" viewBox="0 0 180 180">
+              <circle class="ring-bg" cx="90" cy="90" r="78"/>
+              <circle class="ring-fg" id="ring" cx="90" cy="90" r="78" stroke-dasharray="490" stroke-dashoffset="0"/>
+            </svg>
+            <div class="timer-center">
+              <div class="timer-time" id="timer-display">5:00</div>
+              <div class="timer-phase" id="phase-label">Ready</div>
+            </div>
+          </div>
+          <div class="script-box"><p id="script-text">Press start when you're ready. Find a comfortable seat. This is not to eliminate thoughts — it's to change your relationship to them.</p></div>
+          <div class="btn-row" style="justify-content:center;">
+            <button class="btn btn-accent" id="start-btn" onclick="startMeditation()">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span id="start-label">Start</span>
+            </button>
+            <button class="btn btn-sm" onclick="resetMeditation()">Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">What you're doing in each minute</div>
+        <div class="minute-row"><div class="minute-head"><span class="minute-n">Minute 1</span><span class="minute-name">Settle</span></div><p class="muted">Just sit. Notice your breath without changing it. Say internally: <em>"This is not to eliminate thoughts. This is to change my relationship to them."</em></p></div>
+        <div class="minute-row"><div class="minute-head"><span class="minute-n">Minute 2</span><span class="minute-name">Thought labeling</span></div><p class="muted">When a thought appears, mentally say "OCD thought." No arguing, correcting or reassuring. Label it and return to breath.</p></div>
+        <div class="minute-row"><div class="minute-head"><span class="minute-n">Minute 3</span><span class="minute-name">Anxiety allowance</span></div><p class="muted">If anxiety rises, say internally "anxiety is allowed." Notice where it lives in your body. Observe it like weather. Don't try to solve it.</p></div>
+        <div class="minute-row"><div class="minute-head"><span class="minute-n">Minute 4</span><span class="minute-name">Urge observation</span></div><p class="muted">If an urge to do a ritual appears, say "there is the urge," rate it 0–10 silently, and do nothing. Watch it rise, plateau and move.</p></div>
+        <div class="minute-row"><div class="minute-head"><span class="minute-n">Minute 5</span><span class="minute-name">Reclaim authority</span></div><p class="muted"><em>"Thoughts are not commands. Urges are not emergencies. I choose behavior, not OCD."</em></p></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Remember</div>
+        <p class="muted" style="margin-bottom:8px;">Don't use this to lower anxiety before an exposure. That's avoidance. Practice once daily, not during a panic spike.</p>
+        <p class="muted">Meditation is practice. ERP is treatment. Life is exposure.</p>
+      </div>
+    </div>
+
+    <!-- URGE SURFING -->
+    <div id="sec-urge" class="section">
+      <div class="page-header">
+        <div class="page-title">Urge surfing</div>
+        <div class="page-sub">When the urge to do a ritual appears, don't act. Observe it instead.</div>
+      </div>
+      <div class="card">
+        <label class="field-label" for="urge-slider">Rate your urge right now (0–10)</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <span class="muted">0</span>
+          <input type="range" min="0" max="10" value="0" step="1" id="urge-slider" oninput="updateUrge(this.value)">
+          <span class="muted">10</span>
+        </div>
+        <div class="urge-number" id="urge-val">0</div>
+        <div class="urge-bar-wrap"><div class="urge-bar" id="urge-bar" style="width:0%;background:var(--accent);"></div></div>
+        <p id="urge-msg" class="muted" style="text-align:center;margin-top:6px;">Set the slider to your current urge level.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Now, do nothing.</div>
+        <p class="muted" style="margin-bottom:1.25rem;">Watch the urge rise. Watch it peak. Watch it fall. Start the timer and observe without acting.</p>
+        <div class="btn-row">
+          <button class="btn btn-accent" id="urge-btn" onclick="startUrgeTimer()">
+            <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Start 3-minute observation
+          </button>
+          <span id="urge-clock" style="font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;"></span>
+        </div>
+        <div class="divider"></div>
+        <p class="muted">After the timer, rate your urge again. Urges almost always drop. That's the data.</p>
+      </div>
+    </div>
+
+    <!-- EXPOSURE LADDER -->
+    <div id="sec-expose" class="section">
+      <div class="page-header">
+        <div class="page-title">Exposure ladder</div>
+        <div class="page-sub">Build your own ladder from easiest to hardest. Work from Level 1 up. Anxiety after an exposure is success.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div class="card-title" style="margin:0;">Your exposures</div>
+          <button class="btn btn-sm" onclick="resetExposures()">Clear checkmarks</button>
+        </div>
+        <div id="exposure-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Add an exposure</div>
+        <div class="add-row" style="margin-bottom:10px;">
+          <input type="text" id="exp-text" placeholder="e.g. Touch a doorknob, wait 2 minutes before washing" onkeydown="if(event.key==='Enter')addExposure()">
+          <select id="exp-level" aria-label="Level">
+            <option>Level 1</option><option>Level 2</option><option>Level 3</option><option>Level 4</option><option>Level 5</option>
+          </select>
+          <button class="btn" onclick="addExposure()">Add</button>
+        </div>
+        <p class="muted" style="font-size:12px;">After an exposure, do nothing. No reassurance. No neutralizing. Just sit with it.</p>
+      </div>
+    </div>
+
+    <!-- WEEKLY -->
+    <div id="sec-weekly" class="section">
+      <div class="page-header">
+        <div class="page-title">Facing-fear challenge</div>
+        <div class="page-sub">Once a week, try one exposure slightly bigger than your current comfort level.</div>
+      </div>
+      <div class="card">
+        <label class="card-title" for="weekly-challenge" style="display:block;">This week's challenge</label>
+        <textarea id="weekly-challenge" rows="3" placeholder="Describe this week's bigger exposure" style="margin-bottom:1rem;" oninput="saveWeeklyDraft()"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-accent" id="weekly-btn" onclick="markWeeklyDone()">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Mark as done this week
+          </button>
+          <span class="weekly-status" id="weekly-status"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">What to expect</div>
+        <div class="minute-row"><div class="minute-name" style="font-size:13px;">Weeks 1–2</div><p class="muted">Anxiety may spike. OCD may resist. That's normal.</p></div>
+        <div class="minute-row"><div class="minute-name" style="font-size:13px;">Weeks 3–4</div><p class="muted">Urges begin to feel less urgent. Small wins start to add up.</p></div>
+        <div class="minute-row"><div class="minute-name" style="font-size:13px;">Month 2</div><p class="muted">Rituals take less time. Decisions get easier.</p></div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div id="sec-progress" class="section">
+      <div class="page-header">
+        <div class="page-title">Progress</div>
+        <div class="page-sub">Numbers trend over months, not days. Keep logging.</div>
+      </div>
+      <div class="source-note" id="progress-source"></div>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-val" id="m-incidents">—</div><div class="metric-lbl">Incidents (7 days)</div></div>
+        <div class="metric-card"><div class="metric-val" id="m-avgsuds">—</div><div class="metric-lbl">Avg SUDS (7 days)</div></div>
+        <div class="metric-card"><div class="metric-val" id="m-minutes">—</div><div class="metric-lbl">Minutes on rituals (7 days)</div></div>
+        <div class="metric-card"><div class="metric-val" id="m-today">—</div><div class="metric-lbl">Incidents today</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <div class="card-title" style="margin:0;">Incidents per day</div>
+          <button class="btn btn-sm" onclick="loadProgress()">Refresh</button>
+        </div>
+        <div class="chart-wrap"><canvas id="inc-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Average SUDS per day</div>
+        <div class="chart-wrap"><canvas id="suds-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Minutes on rituals per day</div>
+        <div class="chart-wrap"><canvas id="min-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- GUIDE -->
+    <div id="sec-guide" class="section guide">
+      <div class="page-header">
+        <div class="page-title">How to use</div>
+        <div class="page-sub">What this tool is, how to fit it into your day, and how to share your log with a therapist.</div>
+      </div>
+      <nav class="toc" aria-label="On this page">
+        <a href="#guide-about" onclick="jump('guide-about');return false;">About</a>
+        <a href="#guide-findhelp" onclick="jump('guide-findhelp');return false;">Find a therapist</a>
+        <a href="#guide-daily" onclick="jump('guide-daily');return false;">A daily routine</a>
+        <a href="#guide-tools" onclick="jump('guide-tools');return false;">The tools</a>
+        <a href="#guide-therapist" onclick="jump('guide-therapist');return false;">Sharing with a therapist</a>
+        <a href="#guide-sheet" onclick="jump('guide-sheet');return false;">Connect a Google Sheet</a>
+        <a href="#guide-privacy" onclick="jump('guide-privacy');return false;">Your privacy</a>
+      </nav>
+
+      <div class="card" id="guide-about">
+        <h2>About</h2>
+        <p>OCD Daily Practice is a free tool for practicing exposure and response prevention (ERP) and mindfulness between therapy sessions. ERP means facing the things that trigger your OCD, a little at a time, without doing the ritual that usually follows. Over time, the anxiety and the urges lose their grip.</p>
+        <p>It works best alongside a therapist who treats OCD (see <a href="#" onclick="jump('guide-findhelp');return false;">Find a therapist</a>). It is not a medical device and does not replace professional treatment. If you're in crisis, call or text 988 (Suicide &amp; Crisis Lifeline, US).</p>
+      </div>
+
+      <div class="card" id="guide-findhelp">
+        <h2>Find a therapist</h2>
+        <p>If you don't have a therapist yet, these directories are a good place to start. They're independent organizations, not connected to this tool.</p>
+        <ol>
+          <li><strong><a href="https://iocdf.org/help/" target="_blank" rel="noopener">International OCD Foundation (IOCDF) Resource Directory</a></strong>: therapists, clinics and support groups that focus on OCD. Fewer listings, but more specialized.</li>
+          <li><strong><a href="https://www.psychologytoday.com/us/therapists/obsessive-compulsive-ocd" target="_blank" rel="noopener">Psychology Today therapist finder</a></strong>: many more listings, with filters for location, insurance and online sessions. Therapists describe their own specialties.</li>
+        </ol>
+        <p>Whichever you use, ask any therapist you contact whether they treat OCD with exposure and response prevention (ERP).</p>
+      </div>
+
+      <div class="card" id="guide-daily">
+        <h2>A daily routine</h2>
+        <p>You don't need to use every tool every day. A simple rhythm:</p>
+        <ol>
+          <li><strong>As it happens:</strong> log each triggering moment. Keep it short.</li>
+          <li><strong>Once a day:</strong> do the 5-minute meditation, at a calm time rather than during a spike.</li>
+          <li><strong>Once a day:</strong> try one step from your exposure ladder.</li>
+          <li><strong>When an urge hits:</strong> open Urge surfing and watch it for 3 minutes before doing anything.</li>
+          <li><strong>Once a week:</strong> set a slightly bigger facing-fear challenge, and look at Progress.</li>
+        </ol>
+      </div>
+
+      <div class="card" id="guide-tools">
+        <h2>The tools</h2>
+        <h3>Log an incident</h3>
+        <p>Record what triggered you, how intense it felt (SUDS: 0 is calm, 100 is the worst distress you can imagine), what ritual you did and how long it took. If you resisted, write "none." That's a win worth recording.</p>
+        <h3>Recent entries and Progress</h3>
+        <p>See your last 30 entries and your trends over the past week. Look for patterns over months, not days.</p>
+        <h3>Meditate</h3>
+        <p>A guided 5-minute practice in noticing thoughts without reacting to them. It's meant to feel slightly uncomfortable.</p>
+        <h3>Urge surfing</h3>
+        <p>Rate the urge, start the timer, and do nothing. Most urges rise, peak and fall on their own.</p>
+        <h3>Exposure ladder</h3>
+        <p>List situations you avoid, from easiest (Level 1) to hardest (Level 5). If you're working with a therapist, build this list together.</p>
+        <h3>Weekly challenge</h3>
+        <p>One exposure each week that stretches you a little past your current comfort level.</p>
+      </div>
+
+      <div class="card" id="guide-therapist">
+        <h2>Sharing with a therapist</h2>
+        <p>Your log can make sessions more useful. Your therapist can see what's triggering you, how intense it gets and whether rituals are taking less time. There are two ways to share it.</p>
+        <h3>Download and send <span class="option-tag">Easiest, no setup</span></h3>
+        <ol>
+          <li>Go to <strong>Recent entries</strong> and click <strong>Download CSV</strong>.</li>
+          <li>Email the file to your therapist, or open it in Excel, Numbers or Google Sheets to print it.</li>
+          <li>Repeat before each session.</li>
+        </ol>
+        <h3>Share a live Google Sheet <span class="option-tag">About 5 minutes to set up</span></h3>
+        <p>Your therapist sees each entry as soon as you log it, without you sending anything.</p>
+        <ol>
+          <li>Connect a Google Sheet using the steps in the next section.</li>
+          <li>Open your Sheet in Google Sheets and click <strong>Share</strong> (top right).</li>
+          <li>Add your therapist's email and set their access to <strong>Viewer</strong>, so they can read but not change anything.</li>
+          <li>Click <strong>Send</strong>.</li>
+        </ol>
+        <p>Share the Sheet itself, not the Web app link that ends in <code>/exec</code>. That link is only for this tool, and it should stay private.</p>
+      </div>
+
+      <div class="card" id="guide-sheet">
+        <h2>Connect a Google Sheet</h2>
+        <p>This is optional. It sends each new entry to a Google Sheet in your own Google Drive, which is useful for sharing with a therapist or seeing your log on other devices. You'll need a Google account.</p>
+        <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Copy the template.</strong> <a href="https://docs.google.com/spreadsheets/d/1YFCjnIRlVWdXrhyNezCY67OlJG8fl5EKqohMOG50GFA/copy" target="_blank" rel="noopener">Open the template</a> and click "Make a copy." It saves to your Google Drive.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Add the script.</strong> In your copy, click Extensions, then Apps Script. Delete what's there and paste this in (tap the box to select it all):
+          <div class="step-code">function doPost(e){const ss=SpreadsheetApp.getActiveSpreadsheet();const data=JSON.parse(e.postData.contents);const sheet=ss.getSheetByName(data.sheet||'Tracker');sheet.appendRow(data.row);return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);}function doGet(e){const ss=SpreadsheetApp.getActiveSpreadsheet();const sheet=ss.getSheetByName(e.parameter.sheet||'Tracker');const rows=sheet.getDataRange().getDisplayValues();return ContentService.createTextOutput(JSON.stringify({rows})).setMimeType(ContentService.MimeType.JSON);}</div>
+          Click the save icon.
+        </div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Publish it.</strong> Click Deploy, then New deployment. Click the gear icon and choose "Web app." Set "Who has access" to "Anyone," then click Deploy.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Approve access.</strong> Google asks you to authorize the script, and may warn that the app isn't verified. That's expected, because it's a script only you are running. Click Advanced, then "Go to" the project, then Allow.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Copy the link.</strong> Google shows a Web app link ending in <code>/exec</code>. Copy it.</div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Connect it here.</strong> Open <a href="#" onclick="openSettings();return false;">Settings</a>, paste the link and click Connect Sheet.</div></div>
+        <p class="note">Entries you logged before connecting stay in this browser and won't copy to the Sheet automatically. To move them, download a CSV and paste the rows into your Sheet.</p>
+      </div>
+
+      <div class="card" id="guide-privacy">
+        <h2>Your privacy</h2>
+        <p>There are no accounts, and nothing you write is sent to us. Entries are saved in your browser on this device. If you clear your browser data or switch devices, they won't come with you, so download a CSV now and then.</p>
+        <p>If you connect a Google Sheet, entries also go to that Sheet in your own Google Drive. Only you, and anyone you share the Sheet with, can see it. Keep your <code>/exec</code> link private, since anyone who has it can read your entries.</p>
+      </div>
+
+      <div class="card">
+        <h2>Still stuck?</h2>
+        <p>See <a href="#" onclick="goTo('feedback');return false;">Questions or feedback</a> to get in touch.</p>
+      </div>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div id="sec-feedback" class="section guide">
+      <div class="page-header">
+        <div class="page-title">Questions or feedback</div>
+        <div class="page-sub">This tool is new, and I'd like to hear how it's working for you.</div>
+      </div>
+      <div class="card">
+        <h2>Get in touch</h2>
+        <p>Email me if something isn't working, a step is confusing, or you have an idea for something that would help. Suggestions are welcome, even small ones.</p>
+        <p style="margin:1rem 0;"><a class="btn btn-accent" href="mailto:deborahhilty7@gmail.com?subject=OCD%20Daily%20Practice%3A%20question%20or%20feedback">Email OCD Daily Practice</a></p>
+        <p class="note">If the button doesn't open your email app, write to <span style="user-select:all;">deborahhilty7@gmail.com</span> from any email account.</p>
+      </div>
+      <div class="card">
+        <h2>What I can help with</h2>
+        <p>I can help with using the tool: setup, connecting a Google Sheet, downloading your entries and fixing problems. I'm not a therapist or medical professional, so I can't give advice about OCD, treatment, medication or mental health. For those questions, please talk to a licensed provider.</p>
+        <p>To find one, try the <a href="https://iocdf.org/help/" target="_blank" rel="noopener">IOCDF Resource Directory</a> or <a href="https://www.psychologytoday.com/us/therapists/obsessive-compulsive-ocd" target="_blank" rel="noopener">Psychology Today</a>.</p>
+        <p>Please don't include personal details about your OCD or your log in your email. They aren't needed to fix a problem with the tool.</p>
+        <p><strong>If you're in crisis, don't email.</strong> Messages may not be read for days. Call or text 988 (Suicide &amp; Crisis Lifeline, US), or call 911 if you're in immediate danger.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── STORAGE ───────────────────────────────────────────────────────
+function lsGet(k,fallback){try{const v=localStorage.getItem(k);return v===null?fallback:v;}catch(e){return fallback;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);return true;}catch(e){return false;}}
+function getScriptUrl(){return lsGet('ocd-script-url','');}
+function isSynced(){return !!getScriptUrl();}
+function getLocalEntries(){try{return JSON.parse(lsGet('ocd-entries','[]'))||[];}catch(e){return [];}}
+function saveLocalEntries(rows){return lsSet('ocd-entries',JSON.stringify(rows));}
+
+// Returns rows in Sheet column order: Date, Time, Situation, SUDS, Ritual, Ritual cont., (blank), Minutes, Notes
+async function getEntries(){
+  if(isSynced()){
+    try{
+      const res=await fetch(getScriptUrl()+'?sheet=Tracker');
+      const data=await res.json();
+      const rows=(data.rows||[]).slice(1).filter(r=>r[0]&&String(r[0]).trim()).map(r=>{const c=r.slice();c[0]=fmtDate(c[0]);c[1]=fmtTime(c[1]);return c;});
+      return {rows,source:'sheet'};
+    }catch(e){
+      return {rows:getLocalEntries(),source:'local-fallback'};
+    }
+  }
+  return {rows:getLocalEntries(),source:'local'};
+}
+function sourceText(src){
+  if(src==='sheet')return 'Showing entries from your Google Sheet.';
+  if(src==='local-fallback')return "Couldn't reach your Google Sheet, so this shows entries saved in this browser.";
+  return 'Showing entries saved in this browser.';
+}
+
+// Google Sheets sends dates and times as timestamps like 2026-06-22T05:00:00.000Z; show them the way they look in the Sheet
+const ISO_RE=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+function fmtDate(v){const s=String(v==null?'':v).trim();if(!ISO_RE.test(s))return s;const d=new Date(s);return isNaN(d)?s:dateKey(d);}
+function fmtTime(v){const s=String(v==null?'':v).trim();if(!ISO_RE.test(s))return s;const d=new Date(s);return isNaN(d)?s:d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ── WELCOME ───────────────────────────────────────────────────────
+function checkWelcome(){if(lsGet('ocd-welcome-seen','')!=='1')document.getElementById('welcome').classList.add('show');}
+function dismissWelcome(){lsSet('ocd-welcome-seen','1');document.getElementById('welcome').classList.remove('show');}
+
+// ── SETTINGS ──────────────────────────────────────────────────────
+function renderSyncStatus(){
+  const on=isSynced();
+  document.getElementById('sync-status').innerHTML=on
+    ?'<span class="status-pill status-on">Connected — new entries also go to your Sheet</span>'
+    :'<span class="status-pill status-off">Not connected</span>';
+  document.getElementById('disconnect-btn').style.display=on?'inline-flex':'none';
+  document.getElementById('settings-url').value=getScriptUrl();
+  document.getElementById('save-hint').textContent=on?'Saves to this browser and your Google Sheet.':'Saves to this browser only. To share with a therapist, see How to use.';
+}
+function openSettings(){renderSyncStatus();document.getElementById('sync-error').style.display='none';document.getElementById('settings-modal').classList.add('open');}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('open');}
+document.getElementById('settings-modal').addEventListener('click',e=>{if(e.target.id==='settings-modal')closeSettings();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSettings();});
+function saveSync(){
+  const url=document.getElementById('settings-url').value.trim();
+  if(!url.startsWith('https://script.google.com')||!url.includes('/exec')){document.getElementById('sync-error').style.display='block';return;}
+  document.getElementById('sync-error').style.display='none';
+  lsSet('ocd-script-url',url);renderSyncStatus();showToast('Google Sheet connected');
+}
+function disconnectSync(){try{localStorage.removeItem('ocd-script-url');}catch(e){}renderSyncStatus();showToast('Google Sheet disconnected');}
+function resetAll(){
+  if(!confirm('Erase all entries, exposures, weekly challenges and settings saved in this browser? This cannot be undone. A connected Google Sheet is not affected.'))return;
+  try{Object.keys(localStorage).filter(k=>k.startsWith('ocd-')).forEach(k=>localStorage.removeItem(k));}catch(e){}
+  location.reload();
+}
+
+// ── CSV EXPORT ────────────────────────────────────────────────────
+async function exportCSV(){
+  const {rows}=await getEntries();
+  if(!rows.length){showToast('No entries to download yet');return;}
+  const header=['Date','Time','Situation','Peak SUDS','Ritual','Ritual continued','','Minutes on ritual','Notes'];
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const csv=[header,...rows].map(r=>header.map((_,i)=>q(r[i])).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ocd-log-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+// ── NAV ───────────────────────────────────────────────────────────
+function show(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='recent')loadRecent();
+  if(id==='progress')loadProgress();
+}
+
+function goTo(id,anchor){
+  const btn=document.querySelector(`.nav-item[data-sec="${id}"]`)||[...document.querySelectorAll('.nav-item')].find(b=>(b.getAttribute('onclick')||'').includes(`'${id}'`));
+  if(btn)show(id,btn);
+  if(anchor)setTimeout(()=>jump(anchor),50);
+}
+function jump(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}
+
+// ── INCIDENT FORM ─────────────────────────────────────────────────
+function dateKey(d){return d.toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'2-digit'});}
+function initForm(){
+  const now=new Date();
+  document.getElementById('inc-date').value=dateKey(now);
+  document.getElementById('inc-time').value=now.toTimeString().slice(0,5);
+}
+function updateSuds(v){
+  const val=parseInt(v);
+  document.getElementById('suds-val').textContent=val;
+  let lbl='No distress';
+  if(val>=1&&val<=25)lbl='Mild distress';
+  else if(val<=50&&val>25)lbl='Moderate distress';
+  else if(val<=75&&val>50)lbl='High distress';
+  else if(val>75)lbl='Extreme distress';
+  document.getElementById('suds-label').textContent=lbl;
+}
+async function submitIncident(){
+  const situation=document.getElementById('inc-situation').value.trim();
+  const ritual=document.getElementById('inc-ritual').value.trim();
+  if(!situation||!ritual){showToast('Fill in the situation and ritual first');return;}
+  const btn=document.getElementById('log-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving...';
+  const row=[
+    document.getElementById('inc-date').value,
+    document.getElementById('inc-time').value,
+    situation,
+    parseInt(document.getElementById('suds-slider').value),
+    ritual,
+    document.getElementById('inc-ritual2').value.trim(),
+    '',
+    document.getElementById('inc-minutes').value.trim(),
+    document.getElementById('inc-notes').value.trim()
+  ];
+  const entries=getLocalEntries();entries.push(row);
+  const savedLocal=saveLocalEntries(entries);
+  let msg=savedLocal?'Entry saved':'Could not save in this browser';
+  if(isSynced()){
+    try{
+      await fetch(getScriptUrl(),{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({sheet:'Tracker',row})});
+      msg='Entry saved to this browser and your Sheet';
+    }catch(err){msg='Saved in this browser. Could not reach your Sheet.';}
+  }
+  showToast(msg);
+  ['inc-situation','inc-ritual','inc-ritual2','inc-minutes','inc-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('suds-slider').value=50;updateSuds(50);initForm();
+  btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Save entry';
+}
+
+// ── RECENT ────────────────────────────────────────────────────────
+async function loadRecent(){
+  const el=document.getElementById('recent-list');
+  el.innerHTML='<p class="muted">Loading...</p>';
+  const {rows,source}=await getEntries();
+  document.getElementById('recent-source').textContent=sourceText(source);
+  const canDelete=source!=='sheet';
+  const recent=rows.slice(-30).reverse();
+  if(!recent.length){el.innerHTML='<p class="muted">No entries yet. Use "Log an incident" to add your first one.</p>';return;}
+  const sheetNote=canDelete?'':'<p class="note" style="margin-bottom:8px;">To delete an entry, delete its row in your Google Sheet, then click Refresh.</p>';
+  el.innerHTML=sheetNote+'<div class="recent-log-list">'+recent.map((r,k)=>{
+    const idx=rows.length-1-k;
+    const suds=parseInt(r[3])||0;
+    const chip=suds>=75?'suds-high':suds>=40?'suds-mid':'suds-low';
+    const del=canDelete?`<button class="entry-del" onclick="deleteEntry(${idx})" aria-label="Delete this entry" title="Delete this entry">×</button>`:'';
+    return `<div class="history-entry">${del}<div class="history-time">${esc(r[0])}, ${esc(r[1])} <span class="suds-chip ${chip}">SUDS ${suds}</span></div><div class="history-situation">${esc(r[2])}</div><div class="history-ritual">${esc(r[4])}${r[7]?', '+esc(r[7])+' min':''}</div>${r[8]?`<div class="muted" style="font-size:12px;margin-top:2px;">${esc(r[8])}</div>`:''}</div>`;
+  }).join('')+'</div>';
+}
+function deleteEntry(idx){
+  const entries=getLocalEntries();
+  if(idx<0||idx>=entries.length)return;
+  const e=entries[idx];
+  if(!confirm(`Delete this entry from ${e[0]}, ${e[1]}? This can't be undone.`))return;
+  entries.splice(idx,1);saveLocalEntries(entries);
+  showToast('Entry deleted');loadRecent();
+}
+
+// ── MEDITATION ────────────────────────────────────────────────────
+const PHASES=[
+  {label:'Settle',duration:60,script:'Sit comfortably. Say internally: "This is not to eliminate thoughts. This is to change my relationship to them." Notice your breath. Do not change it.'},
+  {label:'Thought labeling',duration:60,script:'When a thought appears, gently say: "OCD thought." No arguing. No correcting. No reassurance. Return to breath.'},
+  {label:'Anxiety allowance',duration:60,script:'If anxiety rises, say internally "Anxiety is allowed." Feel where it sits — chest, stomach, throat. Observe it like weather. Do not solve it.'},
+  {label:'Urge observation',duration:60,script:'If an urge to do a ritual appears, say "There is the urge." Rate it 0–10 silently. Do nothing else. Watch it rise. Watch it plateau. Watch it move.'},
+  {label:'Reclaim authority',duration:60,script:'"Thoughts are not commands. Urges are not emergencies. I choose behavior, not OCD." Do not immediately perform a ritual when this ends.'}
+];
+const TOTAL=300,CIRC=490;
+let mInterval=null,mPhase=0,mSec=TOTAL,mRunning=false;
+function buildPips(){document.getElementById('phase-track').innerHTML=PHASES.map((p,i)=>`<span class="phase-pip" id="pip-${i}">${p.label}</span>`).join('');}
+function updateTimerUI(){
+  const elapsed=TOTAL-mSec;
+  document.getElementById('ring').style.strokeDashoffset=Math.max(0,CIRC-(elapsed/TOTAL)*CIRC);
+  document.getElementById('timer-display').textContent=`${Math.floor(mSec/60)}:${String(mSec%60).padStart(2,'0')}`;
+  document.getElementById('phase-label').textContent=PHASES[mPhase].label;
+  document.getElementById('script-text').textContent=PHASES[mPhase].script;
+  PHASES.forEach((_,i)=>{document.getElementById('pip-'+i).className='phase-pip'+(i<mPhase?' done':i===mPhase?' active':'');});
+}
+function startMeditation(){
+  if(mSec<=0)return;
+  if(mRunning){clearInterval(mInterval);mRunning=false;document.getElementById('start-label').textContent='Resume';return;}
+  mRunning=true;document.getElementById('start-label').textContent='Pause';
+  updateTimerUI();
+  mInterval=setInterval(()=>{
+    mSec--;
+    const elapsed=TOTAL-mSec;let cum=0;
+    for(let i=0;i<PHASES.length;i++){cum+=PHASES[i].duration;if(elapsed<cum){mPhase=i;break;}}
+    if(mSec<=0){
+      clearInterval(mInterval);mRunning=false;
+      document.getElementById('start-label').textContent='Done';
+      document.getElementById('timer-display').textContent='0:00';
+      document.getElementById('phase-label').textContent='Complete';
+      document.getElementById('script-text').textContent='Practice complete. Do not immediately perform a ritual. Sit for a moment before returning to your day.';
+      document.getElementById('ring').style.strokeDashoffset='0';
+      PHASES.forEach((_,i)=>document.getElementById('pip-'+i).className='phase-pip done');
+      showToast('Meditation complete');return;
+    }
+    updateTimerUI();
+  },1000);
+}
+function resetMeditation(){
+  clearInterval(mInterval);mRunning=false;mPhase=0;mSec=TOTAL;
+  document.getElementById('start-label').textContent='Start';
+  document.getElementById('timer-display').textContent='5:00';
+  document.getElementById('phase-label').textContent='Ready';
+  document.getElementById('ring').style.strokeDashoffset='0';
+  document.getElementById('script-text').textContent="Press start when you're ready. Find a comfortable seat. This is not to eliminate thoughts — it's to change your relationship to them.";
+  buildPips();
+}
+
+// ── URGE SURFING ──────────────────────────────────────────────────
+let urgeInterval=null,urgeSec=0,urgeRunning=false;
+function updateUrge(v){
+  const val=parseInt(v);
+  document.getElementById('urge-val').textContent=val;
+  const bar=document.getElementById('urge-bar');
+  bar.style.width=(val*10)+'%';
+  const msg=document.getElementById('urge-msg');
+  if(val<=3){bar.style.background='var(--accent)';msg.textContent='Low urge. Observe it. It will stay low or fade.';}
+  else if(val<=6){bar.style.background='var(--warn)';msg.textContent='Moderate urge. This is workable. Do nothing. Watch it.';}
+  else{bar.style.background='var(--danger)';msg.textContent="High urge. You don't have to act on it. Urges peak and fall.";}
+}
+function startUrgeTimer(){
+  if(urgeRunning)return;
+  urgeRunning=true;urgeSec=180;
+  const btn=document.getElementById('urge-btn');btn.disabled=true;
+  document.getElementById('urge-clock').textContent='3:00';
+  urgeInterval=setInterval(()=>{
+    urgeSec--;
+    document.getElementById('urge-clock').textContent=`${Math.floor(urgeSec/60)}:${String(urgeSec%60).padStart(2,'0')}`;
+    if(urgeSec<=0){clearInterval(urgeInterval);urgeRunning=false;btn.disabled=false;document.getElementById('urge-clock').textContent='';btn.textContent='Start again';showToast('3 minutes done. Rate your urge again.');}
+  },1000);
+}
+
+// ── EXPOSURES ─────────────────────────────────────────────────────
+let exposures=[];
+function loadExposures(){try{exposures=JSON.parse(lsGet('ocd-exposures','[]'))||[];}catch(e){exposures=[];}renderExposures();}
+function saveExposures(){lsSet('ocd-exposures',JSON.stringify(exposures));}
+function renderExposures(){
+  const el=document.getElementById('exposure-list');
+  if(!exposures.length){el.innerHTML='<p class="muted">Your ladder is empty. Add your first exposure below, starting with something that feels about a 2 or 3 out of 10.</p>';return;}
+  const sorted=exposures.map((e,i)=>({...e,i})).sort((a,b)=>a.level.localeCompare(b.level));
+  el.innerHTML=sorted.map(e=>`<div class="exposure-item"><button class="exp-check ${e.done?'done':''}" onclick="toggleExp(${e.i})" aria-label="Mark done"></button><div class="exp-text ${e.done?'done':''}">${esc(e.text)}</div><div class="exp-badge">${esc(e.level)}</div><button class="exp-del" onclick="deleteExp(${e.i})" aria-label="Delete">×</button></div>`).join('');
+}
+function toggleExp(i){exposures[i].done=!exposures[i].done;saveExposures();renderExposures();}
+function deleteExp(i){exposures.splice(i,1);saveExposures();renderExposures();}
+function addExposure(){const text=document.getElementById('exp-text').value.trim();const level=document.getElementById('exp-level').value;if(!text)return;exposures.push({text,level,done:false});saveExposures();renderExposures();document.getElementById('exp-text').value='';showToast('Exposure added');}
+function resetExposures(){exposures=exposures.map(e=>({...e,done:false}));saveExposures();renderExposures();}
+
+// ── WEEKLY ────────────────────────────────────────────────────────
+function weekKey(){const d=new Date(),jan1=new Date(d.getFullYear(),0,1);return`${d.getFullYear()}-W${Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7)}`;}
+function loadWeekly(){
+  try{const d=JSON.parse(lsGet('ocd-weekly-'+weekKey(),'null'));
+    if(d){document.getElementById('weekly-challenge').value=d.challenge||'';
+      if(d.done){document.getElementById('weekly-status').textContent='Done this week';document.getElementById('weekly-btn').disabled=true;}}
+  }catch(e){}
+}
+function saveWeeklyDraft(){lsSet('ocd-weekly-'+weekKey(),JSON.stringify({challenge:document.getElementById('weekly-challenge').value,done:false}));}
+function markWeeklyDone(){const challenge=document.getElementById('weekly-challenge').value;lsSet('ocd-weekly-'+weekKey(),JSON.stringify({challenge,done:true}));document.getElementById('weekly-status').textContent='Done this week';document.getElementById('weekly-btn').disabled=true;showToast('Weekly challenge marked done');}
+
+// ── PROGRESS ──────────────────────────────────────────────────────
+let incChart=null,sudsChart=null,minChart=null;
+async function loadProgress(){
+  const {rows,source}=await getEntries();
+  document.getElementById('progress-source').textContent=sourceText(source)+' Last 7 days.';
+  const days=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(dateKey(d));}
+  const incPD={},sudsPD={},minPD={};
+  days.forEach(d=>{incPD[d]=0;sudsPD[d]=[];minPD[d]=0;});
+  rows.forEach(r=>{
+    let dk=String(r[0]).trim();
+    const p=new Date(dk);if(!isNaN(p))dk=dateKey(p);
+    if(incPD[dk]!==undefined){incPD[dk]++;const s=parseInt(r[3]);if(!isNaN(s))sudsPD[dk].push(s);const m=parseInt(r[7]);if(!isNaN(m))minPD[dk]+=m;}
+  });
+  const labels=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);labels.push(d.toLocaleDateString('en-US',{weekday:'short'}));}
+  const inc=days.map(d=>incPD[d]);
+  const suds=days.map(d=>sudsPD[d].length?Math.round(sudsPD[d].reduce((a,b)=>a+b)/sudsPD[d].length):0);
+  const mins=days.map(d=>minPD[d]);
+  document.getElementById('m-incidents').textContent=inc.reduce((a,b)=>a+b,0);
+  const allSuds=[].concat(...days.map(d=>sudsPD[d]));
+  document.getElementById('m-avgsuds').textContent=allSuds.length?Math.round(allSuds.reduce((a,b)=>a+b)/allSuds.length):'—';
+  document.getElementById('m-minutes').textContent=mins.reduce((a,b)=>a+b,0);
+  document.getElementById('m-today').textContent=incPD[days[6]];
+  if(typeof Chart==='undefined'){showToast('Charts could not load. Check your connection.');return;}
+  if(incChart)incChart.destroy();if(sudsChart)sudsChart.destroy();if(minChart)minChart.destroy();
+  const opts=(extra)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:Object.assign({beginAtZero:true},extra)}});
+  incChart=new Chart(document.getElementById('inc-chart'),{type:'bar',data:{labels,datasets:[{data:inc,backgroundColor:'#639922',borderRadius:5}]},options:opts({ticks:{stepSize:1}})});
+  sudsChart=new Chart(document.getElementById('suds-chart'),{type:'line',data:{labels,datasets:[{data:suds,borderColor:'#BA7517',backgroundColor:'transparent',tension:0.35,pointRadius:4,pointBackgroundColor:'#BA7517'}]},options:opts({max:100})});
+  minChart=new Chart(document.getElementById('min-chart'),{type:'bar',data:{labels,datasets:[{data:mins,backgroundColor:'#993C1D',borderRadius:5}]},options:opts({})});
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+buildPips();
+initForm();
+loadExposures();
+loadWeekly();
+renderSyncStatus();
+checkWelcome();
+</script>
+</body>
+</html>
